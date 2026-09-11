@@ -156,7 +156,9 @@ img,svg{ max-width:100%; display:block; }
 @media (max-width:899px){
   .doodle.hide-sm{ display:none; }
   .blob{ inset:13% -9% 8% -9%; }
-  .hd .btn{ font-size:.9rem; padding:.6rem 1.05rem; min-height:46px; }
+  .hd .btn{ font-size:.88rem; padding:.6rem .9rem; min-height:46px; white-space:nowrap; }
+  .brand b{ font-size:1.15rem; }
+  .brand .owl, .brand svg{ width:26px; height:26px; }
   .hd .wrap{ height:62px; }
 }
 
@@ -493,6 +495,38 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
   .trustline .tb{ font-size:.72rem; padding:.22rem .55rem; }
 }
 
+/* ---------- Formulário: 48px de alvo, como pede a spec ---------- */
+.panel .ps .ok{ color:#1B7F3B; font-weight:800; }
+.prefer{ font-size:.82rem; color:var(--ink-2); margin:.1rem 0 .45rem; }
+
+.f{ margin-top:1.25rem; }                 /* 12px+ de respiro entre campos */
+.f input{ min-height:48px; }
+.tg button{ min-height:48px; }
+.opt{ min-height:48px; }
+.scale label{ min-height:52px; }
+#leadSubmit, #surveyNext{ min-height:52px; }
+.cons{ min-height:48px; }
+
+/* Erro sem agressividade: fundo suave em vez de borda vermelha gritante */
+.f input[aria-invalid="true"]{
+  background:#FDF3F1; border-color:#A32718;
+  box-shadow:0 0 0 3px rgba(163,39,24,.10);
+}
+.err{ font-weight:500; }
+
+/* ---------- Pesquisa: "Continuar" só para quem usa teclado ---------- */
+.so-teclado{ position:absolute; width:1px; height:1px; padding:0; margin:0; min-height:0; border:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+body.usando-teclado .so-teclado{ position:static; width:auto; height:auto; min-height:52px; padding:1.05rem 2rem; border:2px solid var(--ink); overflow:visible; clip:auto; }
+
+/* micro-feedback: a opção marca antes da tela trocar */
+.opt{ transition:background-color .14s ease, border-color .14s ease; }
+@media (prefers-reduced-motion: reduce){ .opt{ transition:none; } }
+
+/* ---------- Escala na tela de confirmação ---------- */
+.escala{ margin-top:1.6rem; padding-top:1.3rem; border-top:1.5px solid var(--line); text-align:left; }
+.escala-t{ font-size:.92rem; color:var(--ink-2); margin-bottom:.7rem; }
+.escala-ok{ margin-top:1.4rem; font-family:var(--f-display); font-weight:700; color:#1B7F3B; }
+
 .vh{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 </style>
 </head>
@@ -721,35 +755,35 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
     <div class="grab" id="fazer-parte">
       <div class="grab-grid">
         <div>
-          <h2>Quer ser das primeiras?</h2>
-          <p class="say">Ainda não abrimos o cadastro. Deixe seu contato e a gente avisa você antes de todo mundo.</p>
+          <h2>Garanta seu acesso antecipado.</h2>
+          <p class="say">Os primeiros acessos vão para quem está na lista. Deixe seu contato e a gente chama você.</p>
         </div>
 
         <div class="panel">
           <div id="stepLead">
-            <h3>Entrar na lista</h3>
-            <p class="ps">Sem cartão, sem instalação, sem cobrança. Não ligamos para você.</p>
+            <p class="ps"><span class="ok">✓</span> Sem cartão, sem instalação e sem cobrança.</p>
 
             <form id="leadForm" novalidate>
               <div class="f">
-                <label for="leadName">Seu nome</label>
-                <input id="leadName" name="name" type="text" autocomplete="name" enterkeyhint="next" placeholder="Como podemos chamar você" required>
+                <label for="leadName">Seu nome completo</label>
+                <input id="leadName" name="name" type="text" autocomplete="name" enterkeyhint="next" placeholder="Profa. Mariana Souza" required>
                 <p class="err" id="errName">Escreva seu nome.</p>
               </div>
 
               <div class="f">
-                <label id="contactLabel" for="leadContact">Seu e-mail</label>
+                <label id="contactLabel" for="leadContact">WhatsApp / Celular</label>
+                <p class="prefer">Prefiro receber por:</p>
                 <div class="tg" role="group" aria-label="Como prefere ser avisada">
-                  <button type="button" id="tgMail" aria-pressed="true">E-mail</button>
-                  <button type="button" id="tgWhats" aria-pressed="false">WhatsApp</button>
+                  <button type="button" id="tgWhats" aria-pressed="true">WhatsApp</button>
+                  <button type="button" id="tgMail" aria-pressed="false">E-mail</button>
                 </div>
-                <input id="leadContact" name="contact" type="email" inputmode="email" autocomplete="email" enterkeyhint="send" placeholder="voce@escola.com.br" required style="margin-top:.55rem">
-                <p class="err" id="errContact">Confira o e-mail — parece faltar alguma coisa.</p>
+                <input id="leadContact" name="contact" type="tel" inputmode="tel" autocomplete="tel-national" enterkeyhint="send" placeholder="(DDD) 99999-9999" required style="margin-top:.55rem">
+                <p class="err" id="errContact">Confira o número — precisa ter DDD e de 10 a 11 dígitos.</p>
               </div>
 
               <div class="cons">
                 <input id="leadConsent" type="checkbox" name="consent">
-                <label for="leadConsent" style="font-family:var(--f-body);font-weight:400;font-size:.86rem;margin:0">Aceito receber comunicações sobre o Guiadoo neste contato.</label>
+                <label for="leadConsent" style="font-family:var(--f-body);font-weight:400;font-size:.86rem;margin:0">Aceito receber meu convite de acesso antecipado e avisos da minha turma.</label>
               </div>
               <p class="err" id="errConsent">Precisamos do seu aceite para poder avisar você.</p>
 
@@ -758,10 +792,10 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
                 <input id="leadNick" name="nickname" type="text" tabindex="-1" autocomplete="off">
               </div>
 
-              <button class="btn btn--block" type="submit" id="leadSubmit" style="margin-top:1.2rem">Quero fazer parte</button>
+              <button class="btn btn--block" type="submit" id="leadSubmit" style="margin-top:1.2rem">Quero acesso antecipado</button>
 
               <div class="fs fs--err" id="leadError" role="alert">Não conseguimos enviar agora. Seus dados continuam aqui — toque em “Tentar de novo”.</div>
-              <p class="foot-note">Usamos seu contato só para falar do Guiadoo. <a href="privacidade/">Privacidade</a>.</p>
+              <p class="foot-note">Seu contato fica só com a gente e serve apenas para falar do Guiadoo. <a href="privacidade/">Política de privacidade</a>.</p>
             </form>
           </div>
 
@@ -780,8 +814,7 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
                   <div class="opts">
                     <label class="opt"><input type="radio" name="primary_pain" value="planejamento"> Planejamento das aulas</label>
                     <label class="opt"><input type="radio" name="primary_pain" value="registros"> Registros do dia a dia</label>
-                    <label class="opt"><input type="radio" name="primary_pain" value="relatorios"> Relatórios e documentação</label>
-                    <label class="opt"><input type="radio" name="primary_pain" value="acompanhamento"> Acompanhar as crianças</label>
+                    <label class="opt"><input type="radio" name="primary_pain" value="relatorios"> Relatório e documentação</label>
                     <label class="opt"><input type="radio" name="primary_pain" value="rotina"> Organizar a rotina</label>
                     <label class="opt"><input type="radio" name="primary_pain" value="outra"> Outra coisa</label>
                   </div>
@@ -793,10 +826,9 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
                   <legend>Como você faz isso hoje?</legend>
                   <div class="opts">
                     <label class="opt"><input type="radio" name="current_solution" value="caderno"> Caderno de papel</label>
-                    <label class="opt"><input type="radio" name="current_solution" value="documento"> Word ou Google Docs</label>
-                    <label class="opt"><input type="radio" name="current_solution" value="planilha"> Planilha</label>
+                    <label class="opt"><input type="radio" name="current_solution" value="documento_planilha"> Word, Google Docs ou Planilha</label>
                     <label class="opt"><input type="radio" name="current_solution" value="sistema_escola"> Sistema da escola</label>
-                    <label class="opt"><input type="radio" name="current_solution" value="app"> Notas do celular</label>
+                    <label class="opt"><input type="radio" name="current_solution" value="app"> Notas no celular</label>
                     <label class="opt"><input type="radio" name="current_solution" value="memoria"> De memória, na hora de escrever</label>
                   </div>
                 </fieldset>
@@ -804,34 +836,21 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
 
               <div class="q" data-q="desired_help">
                 <fieldset>
-                  <legend>Se desse para resolver uma coisa hoje, qual seria?</legend>
+                  <legend>Se pudesse eliminar uma dor da sua rotina hoje, qual seria?</legend>
                   <div class="opts">
                     <label class="opt"><input type="radio" name="desired_help" value="planejar"> Planejar</label>
                     <label class="opt"><input type="radio" name="desired_help" value="registrar"> Registrar observações</label>
                     <label class="opt"><input type="radio" name="desired_help" value="organizar"> Organizar informações</label>
-                    <label class="opt"><input type="radio" name="desired_help" value="acompanhar"> Acompanhar as crianças</label>
                     <label class="opt"><input type="radio" name="desired_help" value="relatorios"> Fazer os relatórios</label>
                     <label class="opt"><input type="radio" name="desired_help" value="encontrar"> Achar o que já registrei</label>
                   </div>
                 </fieldset>
               </div>
 
-              <div class="q" data-q="product_interest">
-                <fieldset>
-                  <legend>Última, opcional: o quanto isso seria útil pra você hoje?</legend>
-                  <div class="scale">
-                    <label><input type="radio" name="product_interest" value="1">1</label>
-                    <label><input type="radio" name="product_interest" value="2">2</label>
-                    <label><input type="radio" name="product_interest" value="3">3</label>
-                    <label><input type="radio" name="product_interest" value="4">4</label>
-                    <label><input type="radio" name="product_interest" value="5">5</label>
-                  </div>
-                  <div class="ends"><span>Nada útil</span><span>Muito útil</span></div>
-                </fieldset>
-              </div>
-
               <div class="qa">
-                <button class="btn" type="button" id="surveyNext">Continuar</button>
+                <!-- Some no toque (a seleção já avança). Reaparece para quem
+                     navega por teclado, que precisa de um jeito de confirmar. -->
+                <button class="btn so-teclado" type="button" id="surveyNext">Continuar</button>
                 <button class="lnk" type="button" id="surveySkip">Pular</button>
               </div>
             </form>
@@ -841,9 +860,28 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
             <div class="mk-done" aria-hidden="true">
               <svg width="26" height="26" viewBox="0 0 24 24"><path d="M4 12.5l5.2 5.2L20 6.6" fill="none" stroke="#111" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
-            <h3 id="doneTitle">Pronto. Você está na lista.</h3>
-            <p id="doneText">Assim que abrirmos os próximos acessos, falamos com você.</p>
+            <h3 id="doneTitle">Pronto. Você está na lista prioritária!</h3>
+            <p id="doneText">Assim que abrirmos os próximos acessos, chamamos você.</p>
+
+            <div id="escalaWrap" class="escala">
+              <p class="escala-t">Antes de ir: o quanto resolver isso seria útil para você hoje?</p>
+              <div class="scale" role="group" aria-label="De 1 a 5, o quanto isso seria útil">
+                <label><input type="radio" name="product_interest" value="1">1</label>
+                <label><input type="radio" name="product_interest" value="2">2</label>
+                <label><input type="radio" name="product_interest" value="3">3</label>
+                <label><input type="radio" name="product_interest" value="4">4</label>
+                <label><input type="radio" name="product_interest" value="5">5</label>
+              </div>
+              <div class="ends"><span>Pouco útil</span><span>Muito útil</span></div>
+            </div>
+
+            <p id="escalaObrigada" class="escala-ok" hidden>Obrigado. Isso ajuda a gente a priorizar.</p>
+
+            <div style="margin-top:1.4rem">
+              <a class="btn btn--light" href="#topo">Voltar para o início</a>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -1047,6 +1085,13 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
     // └──────────────────────────────────────────────────────────────────┘
     apiBase: '',
 
+    // Qual canal vem pré-selecionado. Os dois documentos de diagnóstico
+    // discordaram neste ponto: um pediu e-mail (menos atrito em tráfego frio),
+    // o outro WhatsApp (é onde a professora brasileira vive).
+    // Ninguém sabe sem dado — então vira variante, e o evento carrega qual
+    // delas a pessoa viu. Trocar aqui basta.
+    contatoPadrao: 'whatsapp',      // 'whatsapp' | 'email'
+
     get leadEndpoint()   { return this.apiBase ? this.apiBase + '/api/leads'  : ''; },
     get surveyEndpoint() { return this.apiBase ? this.apiBase + '/api/survey' : ''; },
     storageKey: 'guiadoo.lead',
@@ -1210,7 +1255,7 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
   const stepSurvey = $('#stepSurvey');
   const stepDone = $('#stepDone');
 
-  let contactType = 'email';   // padrão: menor barreira em tráfego frio
+  let contactType = CONFIG.contatoPadrao === 'email' ? 'email' : 'whatsapp';
   let started = false;
   let attempts = 0;
   let lead = null;
@@ -1221,18 +1266,18 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
     $('#tgWhats').setAttribute('aria-pressed', String(type === 'whatsapp'));
     $('#tgMail').setAttribute('aria-pressed', String(type === 'email'));
     if (type === 'whatsapp') {
-      contactLabel.textContent = 'Seu WhatsApp';
+      contactLabel.textContent = 'WhatsApp / Celular';
       contactInput.type = 'tel';
       contactInput.inputMode = 'tel';
       contactInput.autocomplete = 'tel-national';
-      contactInput.placeholder = '(48) 90000-0000';
-      errContact.textContent = 'Confira o número — ele precisa ter DDD e de 10 a 11 dígitos.';
+      contactInput.placeholder = '(DDD) 99999-9999';
+      errContact.textContent = 'Confira o número — precisa ter DDD e de 10 a 11 dígitos.';
     } else {
-      contactLabel.textContent = 'Seu e-mail';
+      contactLabel.textContent = 'E-mail';
       contactInput.type = 'email';
       contactInput.inputMode = 'email';
       contactInput.autocomplete = 'email';
-      contactInput.placeholder = 'voce@escola.com.br';
+      contactInput.placeholder = 'Seu melhor e-mail';
       errContact.textContent = 'Confira o e-mail — parece faltar alguma coisa.';
     }
     contactInput.value = '';
@@ -1255,9 +1300,14 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
   nameInput.addEventListener('input', function () { hideError(nameInput, errName); });
   consentInput.addEventListener('change', function () { errConsent.classList.remove('show'); });
 
+  let inicioForm = 0;
   [nameInput, contactInput].forEach(function (el) {
     el.addEventListener('focus', function () {
-      if (!started) { started = true; track('lead_form_started'); }
+      if (!started) {
+        started = true;
+        inicioForm = Date.now();
+        track('lead_form_started', { form_variant: CONFIG.contatoPadrao });
+      }
     });
   });
 
@@ -1302,7 +1352,7 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
 
     leadError.classList.remove('show');
     loadingOn(true);
-    track('lead_form_submitted', { contact_type: contactType });
+    track('lead_form_submitted', { contact_type: contactType, form_variant: CONFIG.contatoPadrao });
 
     const typedContact = contactInput.value.trim();
     const sameAsBefore = previousLead && previousLead.contact === typedContact;
@@ -1348,6 +1398,8 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
     writeJSON(CONFIG.storageKey, lead);
     track('lead_created', {
       contact_type: contactType,
+      form_variant: CONFIG.contatoPadrao,
+      time_to_complete_sec: inicioForm ? Math.round((Date.now() - inicioForm) / 1000) : null,
       source: lead.source, medium: lead.medium, campaign: lead.campaign, content: lead.content,
       delivered: delivered
     });
@@ -1378,14 +1430,22 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
 
   function renderStep() {
     questions.forEach(function (q, i) { q.classList.toggle('is-active', i === qIndex); });
-    const shown = Math.min(qIndex + 1, 3);
-    progressTxt.textContent = qIndex < 3 ? shown + ' de 3' : 'Opcional';
-    dots.forEach(function (d, i) { d.classList.toggle('on', i <= Math.min(qIndex, 2)); });
-    nextBtn.textContent = qIndex >= questions.length - 1 ? 'Concluir' : 'Continuar';
-    skipBtn.textContent = qIndex >= questions.length - 1 ? 'Pular e concluir' : 'Pular';
+    progressTxt.textContent = (qIndex + 1) + ' de 3';
+    dots.forEach(function (d, i) { d.classList.toggle('on', i <= qIndex); });
+    const ultima = qIndex >= questions.length - 1;
+    nextBtn.textContent = ultima ? 'Concluir' : 'Continuar';
+    skipBtn.textContent = ultima ? 'Pular e concluir' : 'Pular';
   }
 
   function currentField() { return questions[qIndex].getAttribute('data-q'); }
+
+  // Em <input type=radio>, a seta do teclado JÁ seleciona ao navegar.
+  // Se avançássemos a cada 'change', quem usa teclado pularia a pergunta
+  // sem querer. Então: toque e clique avançam sozinhos; teclado não —
+  // para esse caso o botão "Continuar" reaparece.
+  let porPonteiro = false;
+  surveyForm.addEventListener('pointerdown', function () { porPonteiro = true; });
+  surveyForm.addEventListener('keydown', function () { porPonteiro = false; });
 
   surveyForm.addEventListener('change', function (e) {
     if (e.target.type !== 'radio') return;
@@ -1397,8 +1457,9 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
     answers[field] = e.target.value;
     track('survey_question_answered', { question: field, answer: e.target.value });
     persistSurvey();                                    // salva parcial a cada resposta
-    if (!reduced) setTimeout(advance, 260);             // avança sozinho, sem prender o usuário
-    else advance();
+    // 300ms: tempo de ver a opção marcar antes da tela trocar
+    if (porPonteiro && !reduced) setTimeout(advance, 300);
+    else if (porPonteiro) advance();
   });
 
   function persistSurvey() {
@@ -1421,7 +1482,7 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
 
   nextBtn.addEventListener('click', function () {
     const field = currentField();
-    if (!answers[field] && qIndex < 3) {
+    if (!answers[field]) {
       const first = $('.q.is-active input');
       if (first) first.focus();
       return;
@@ -1450,14 +1511,35 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
 
     stepSurvey.hidden = true;
     stepDone.hidden = false;
-    $('#doneTitle').textContent = 'Pronto, ' + lead.name.split(' ')[0] + '. Você está na lista.';
-    if (answered >= 3) {
-      $('#doneText').textContent = 'Obrigado por ajudar a construir o Guiadoo. Assim que abrirmos os próximos acessos, falamos com você por ' + (contactType === 'whatsapp' ? 'WhatsApp' : 'e-mail') + '.';
-    } else {
-      $('#doneText').textContent = 'Seu contato está salvo. Assim que abrirmos os próximos acessos, falamos com você por ' + (contactType === 'whatsapp' ? 'WhatsApp' : 'e-mail') + '.';
-    }
+    const primeiro = lead.name.split(' ')[0];
+    const canal = contactType === 'whatsapp' ? 'no WhatsApp' : 'por e-mail';
+    $('#doneTitle').textContent = 'Pronto, ' + primeiro + '. Você está na lista prioritária!';
+    $('#doneText').textContent = answered >= 3
+      ? 'Obrigado por ajudar a construir o Guiadoo. Assim que abrirmos os próximos acessos, chamamos você ' + canal + '.'
+      : 'Seu contato está salvo. Assim que abrirmos os próximos acessos, chamamos você ' + canal + '.';
     stepDone.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' });
     flushQueue();
+  }
+
+  // A escala de utilidade fica na tela de confirmação: a pessoa recebe a
+  // recompensa primeiro e só depois o pedido extra — opcional de verdade,
+  // porque o cadastro já está concluído.
+  const escalaWrap = $('#escalaWrap');
+  if (escalaWrap) {
+    escalaWrap.addEventListener('change', function (e) {
+      if (e.target.name !== 'product_interest') return;
+      $$('input[name="product_interest"]', escalaWrap).forEach(function (r) {
+        const box = r.closest('label');
+        if (box) box.classList.toggle('is-picked', r.checked);
+      });
+      answers.product_interest = e.target.value;
+      persistSurvey();
+      track('survey_question_answered', { question: 'product_interest', answer: e.target.value });
+      setTimeout(function () {
+        escalaWrap.hidden = true;
+        $('#escalaObrigada').hidden = false;
+      }, reduced ? 0 : 420);
+    });
   }
 
   renderStep();
@@ -1567,6 +1649,13 @@ button,.opt,.scale label,.tg button{ -webkit-user-select:none; user-select:none;
   });
 
   /* ---------- 8. Detalhes ---------- */
+  // Revela o "Continuar" assim que alguém usa Tab ou setas
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Tab' || e.key.indexOf('Arrow') === 0) {
+      document.body.classList.add('usando-teclado');
+    }
+  }, { passive: true });
+
   $('#year').textContent = new Date().getFullYear();
 
   // Qual objeção ainda incomoda: mapeia a pergunta aberta no FAQ
