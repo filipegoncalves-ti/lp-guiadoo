@@ -887,7 +887,16 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
           <div id="stepLead">
             <p class="ps"><span class="ok">✓</span> Gratuito para as primeiras turmas · Roda no navegador, sem instalar nada · Sem cartão</p>
 
-            <form id="leadForm" novalidate>
+            <!-- onsubmit="return false" é um cinto de segurança: se por
+                 qualquer motivo o JavaScript ainda não tiver terminado de
+                 anexar o listener (script externo lento, bloqueado por
+                 ad-blocker, etc.), o navegador faria um GET nativo para a
+                 própria URL — recarregando a página com nome e contato
+                 na barra de endereço, sem salvar nada. Por fora, isso
+                 parece exatamente "a página rolou e voltou para o
+                 formulário". Este atributo bloqueia isso mesmo se o
+                 addEventListener('submit', ...) abaixo nunca rodar. -->
+            <form id="leadForm" novalidate onsubmit="return false">
               <div class="f">
                 <label for="leadName">Seu nome completo</label>
                 <input id="leadName" name="name" type="text" autocomplete="name" enterkeyhint="next" placeholder="Profa. Mariana Souza" required>
@@ -1239,14 +1248,13 @@ if (window.mixpanel && window.mixpanel.init) {
     // │    formulário funciona na tela, mas o contato fica só no         │
     // │    navegador da professora e VOCÊ NUNCA O RECEBE.                │
     // └──────────────────────────────────────────────────────────────────┘
-    supabase: {
+  supabase: {
       url: 'https://vhlzwhcgnrivhysomrvz.supabase.co',                  // ex.: 'https://xxxxx.supabase.co'
       anonKey: 'sb_publishable_IPo-8m1sOYyhYpq_l2guIQ_8RkHEoGU'    // a chave PÚBLICA (anon/publishable) — nunca a service_role
     },
     mixpanel: {
       token: '3127d44b2c4b6f9376d3b65fc3a5f439'
     },
-
     // Qual canal vem pré-selecionado. Os dois documentos de diagnóstico
     // discordaram neste ponto: um pediu e-mail (menos atrito em tráfego frio),
     // o outro WhatsApp (é onde a professora brasileira vive).
@@ -1659,7 +1667,11 @@ if (window.mixpanel && window.mixpanel.init) {
     try {
       if (supabaseClient) {
         const res = await createLead(rpcParams);
-        if (res && res.id) lead.id = res.id;
+        // A função SQL devolve RETURNS TABLE(...) — o supabase-js entrega
+        // isso como um array de linhas, nunca um objeto direto. "res.id"
+        // sempre seria undefined; a linha certa é "res[0].id".
+        const linha = Array.isArray(res) ? res[0] : res;
+        if (linha && linha.id) lead.id = linha.id;
         delivered = true;
       } else {
         await new Promise(function (r) { setTimeout(r, 650); });   // modo demonstração
@@ -1668,6 +1680,11 @@ if (window.mixpanel && window.mixpanel.init) {
     } catch (err) {
       attempts++;
       enqueue('lead', rpcParams);
+      if (debug) {
+        // Nunca logar o objeto "err" inteiro nem "rpcParams" — podem
+        // trazer o contato dentro da mensagem de erro do Postgres.
+        console.error('[guiadoo] falha ao criar o lead:', (err && err.message) || err);
+      }
       if (attempts < CONFIG.maxRetriesBeforeAdvance) {
         loadingOn(false, 'Tentar de novo');
         leadError.classList.add('show');
@@ -1765,7 +1782,10 @@ if (window.mixpanel && window.mixpanel.init) {
     };
 
     if (supabaseClient) {
-      updateSurvey(rpcParams).catch(function () { enqueue('survey', rpcParams); });
+      updateSurvey(rpcParams).catch(function (err) {
+        if (debug) console.error('[guiadoo] falha ao salvar a pesquisa:', (err && err.message) || err);
+        enqueue('survey', rpcParams);
+      });
     } else if (!supaConfigurado) {
       /* modo demonstração: só o localStorage acima já guarda a resposta */
     } else {
