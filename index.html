@@ -1235,6 +1235,24 @@ if (window.mixpanel && window.mixpanel.init) {
 (function () {
   'use strict';
 
+  // Rede de segurança de último recurso: se ALGUM erro não previsto
+  // acontecer em qualquer lugar deste script antes do formulário estar
+  // pronto, a pessoa vê um aviso claro em vez do botão "não fazer nada"
+  // silenciosamente. Só dispara uma vez, e só se o formulário ainda não
+  // tiver funcionado (não interfere em nada depois que tudo carregou bem).
+  var jaAvisouErro = false;
+  window.addEventListener('error', function () {
+    if (jaAvisouErro) return;
+    var caixaErro = document.getElementById('leadError');
+    var botao = document.getElementById('leadSubmit');
+    var formularioAindaNaTela = document.getElementById('stepLead') && !document.getElementById('stepLead').hidden;
+    if (caixaErro && formularioAindaNaTela && (!botao || botao.textContent.trim() === 'Quero acesso antecipado' || botao.disabled === false)) {
+      jaAvisouErro = true;
+      caixaErro.textContent = 'Algo deu errado ao carregar a página. Atualize e tente de novo — se persistir, seus dados continuam seguros, é só tentar mais tarde.';
+      caixaErro.classList.add('show');
+    }
+  });
+
   /* ---------- Configuração ---------- */
   const CONFIG = {
     // ┌──────────────────────────────────────────────────────────────────┐
@@ -1248,13 +1266,14 @@ if (window.mixpanel && window.mixpanel.init) {
     // │    formulário funciona na tela, mas o contato fica só no         │
     // │    navegador da professora e VOCÊ NUNCA O RECEBE.                │
     // └──────────────────────────────────────────────────────────────────┘
-  supabase: {
+   supabase: {
       url: 'https://vhlzwhcgnrivhysomrvz.supabase.co',                  // ex.: 'https://xxxxx.supabase.co'
       anonKey: 'sb_publishable_IPo-8m1sOYyhYpq_l2guIQ_8RkHEoGU'    // a chave PÚBLICA (anon/publishable) — nunca a service_role
     },
     mixpanel: {
       token: '3127d44b2c4b6f9376d3b65fc3a5f439'
     },
+
     // Qual canal vem pré-selecionado. Os dois documentos de diagnóstico
     // discordaram neste ponto: um pediu e-mail (menos atrito em tráfego frio),
     // o outro WhatsApp (é onde a professora brasileira vive).
@@ -1272,9 +1291,27 @@ if (window.mixpanel && window.mixpanel.init) {
   const supaConfigurado = CONFIG.supabase.url.indexOf('COLOCAR') !== 0 && CONFIG.supabase.anonKey.indexOf('COLOCAR') !== 0;
   const mpConfigurado = CONFIG.mixpanel.token.indexOf('COLOCAR') !== 0;
 
-  const supabaseClient = (supaConfigurado && window.supabase)
-    ? window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey)
-    : null;
+  // ⚠️  Ponto crítico: isto roda no TOPO do script, antes de qualquer outra
+  // coisa — inclusive antes do botão "Quero acesso antecipado" ganhar seu
+  // listener de clique. Se createClient() lançar (URL sem "https://",
+  // URL vazia, etc.), o erro sobe e mata o script INTEIRO a partir daqui —
+  // e o formulário fica sem nenhum comportamento, como se o botão não
+  // fizesse nada. Por isso o try/catch: se a configuração estiver errada,
+  // o resto da página continua funcionando (em modo demonstração) em vez
+  // de travar por completo.
+  let supabaseClient = null;
+  if (supaConfigurado && window.supabase) {
+    try {
+      supabaseClient = window.supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+    } catch (e) {
+      console.error(
+        '%c[guiadoo] CONFIG.supabase.url ou anonKey estão inválidos — ' +
+        'a página vai rodar em modo demonstração.\nErro: ' + e.message +
+        '\nConfira se a URL começa com "https://" e não tem espaço nem barra sobrando.',
+        'background:#A22C1B;color:#fff;padding:2px 6px;border-radius:3px'
+      );
+    }
+  }
 
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
@@ -1598,7 +1635,7 @@ if (window.mixpanel && window.mixpanel.init) {
     submitBtn.disabled = on;
     submitBtn.innerHTML = on
       ? '<span class="spinner" aria-hidden="true"></span> Enviando…'
-      : (label || 'Quero fazer parte');
+      : (label || 'Quero acesso antecipado');
   }
 
   leadForm.addEventListener('submit', async function (e) {
