@@ -123,8 +123,8 @@ img,svg{ max-width:100%; display:block; }
 .hero h1{ max-width:19ch; }
 .turn{
   font-family:var(--f-display); font-weight:800;
-  font-size:clamp(1.25rem,3.1vw,1.95rem); letter-spacing:-.035em;
-  line-height:1.1; color:var(--action); margin-top:1rem; max-width:27ch;
+  font-size:clamp(1.08rem,2.5vw,1.6rem); letter-spacing:-.03em;
+  line-height:1.18; color:var(--action); margin-top:.9rem; max-width:34ch;
 }
 .hero .sub{
   margin-top:1rem; font-size:clamp(1.1rem,2.5vw,1.5rem);
@@ -383,9 +383,9 @@ img,svg{ max-width:100%; display:block; }
 /* ---------- Selo de confiança no hero ---------- */
 .trustline{ display:flex; flex-wrap:wrap; gap:.4rem; margin-top:1.1rem; }
 .trustline .tb{
-  font-size:.78rem; font-weight:600; color:var(--ink-2);
+  font-size:.74rem; font-weight:600; color:var(--ink-2);
   background:var(--paper); border:1.5px solid var(--ink);
-  border-radius:999px; padding:.28rem .7rem;
+  border-radius:999px; padding:.26rem .62rem;
 }
 
 /* ---------- Folha A4 do relatório ---------- */
@@ -526,6 +526,23 @@ body.usando-teclado .so-teclado{ position:static; width:auto; height:auto; min-h
 .escala{ margin-top:1.6rem; padding-top:1.3rem; border-top:1.5px solid var(--line); text-align:left; }
 .escala-t{ font-size:.92rem; color:var(--ink-2); margin-bottom:.7rem; }
 .escala-ok{ margin-top:1.4rem; font-family:var(--f-display); font-weight:700; color:#1B7F3B; }
+
+/* Campo preenchido corretamente: confirmação discreta, sem interromper */
+.f input.is-ok{ border-color:#1B7F3B; background:#FBFEFB; }
+.f{ position:relative; }
+.f input.is-ok + .err::before,
+.f input.is-ok ~ .visto{ content:''; }
+.visto{
+  position:absolute; right:14px; bottom:14px; width:20px; height:20px;
+  display:none; place-items:center; border-radius:50%; background:#1B7F3B; color:#fff;
+  font-size:12px; font-weight:700; line-height:1;
+}
+.f input.is-ok ~ .visto{ display:grid; }
+
+.regra{
+  display:inline-block; font-family:var(--f-display); font-weight:800; font-size:.76rem;
+  background:var(--ink); color:#fff; border-radius:999px; padding:.3rem .8rem; margin-bottom:.9rem;
+}
 
 .vh{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 </style>
@@ -741,12 +758,12 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     <div class="wrap hero-grid">
       <div>
         <h1>O quanto você trabalha depois da aula?</h1>
-        <p class="turn">Com o Guiadoo, o relatório já sai rascunhado.</p>
-        <p class="sub">Suas observações viram um rascunho alinhado à BNCC. Você revisa e assina.</p>
+        <p class="turn">Com o Guiadoo, suas notas de voz viram relatórios organizados pelos Campos de Experiência da BNCC.</p>
+        <p class="sub">Grave a rotina pelo celular em segundos. O Guiadoo organiza os fatos e rascunha o documento por Campos de Experiência. Você revisa, edita e assina.</p>
         <div class="cta-row">
           <a class="btn" href="#fazer-parte" data-cta="hero">Quero fazer parte</a>
           <span class="micro">Só nome e um contato. Leva 20 segundos.</span>
-          <p class="trustline"><span class="tb">Feito sobre a BNCC</span><span class="tb">Sob a LGPD</span><span class="tb">Você assina, não a IA</span></p>
+          <p class="trustline"><span class="tb">Organizado por Campos de Experiência</span><span class="tb">Dados das crianças sob a LGPD</span><span class="tb">A professora no controle</span></p>
         </div>
       </div>
 
@@ -862,19 +879,20 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     <div class="grab" id="fazer-parte">
       <div class="grab-grid">
         <div>
-          <h2>Garanta seu acesso antecipado.</h2>
-          <p class="say">Os primeiros acessos vão para quem está na lista. Deixe seu contato e a gente chama você.</p>
+          <h2>Garanta sua vaga no acesso antecipado.</h2>
+          <p class="say">Estamos liberando turmas fechadas para testes práticos. Cadastre-se para receber o convite assim que a sua abrir.</p>
         </div>
 
         <div class="panel">
           <div id="stepLead">
-            <p class="ps"><span class="ok">✓</span> Sem cartão, sem instalação e sem cobrança.</p>
+            <p class="ps"><span class="ok">✓</span> Gratuito para as primeiras turmas · Roda no navegador, sem instalar nada · Sem cartão</p>
 
             <form id="leadForm" novalidate>
               <div class="f">
                 <label for="leadName">Seu nome completo</label>
                 <input id="leadName" name="name" type="text" autocomplete="name" enterkeyhint="next" placeholder="Profa. Mariana Souza" required>
-                <p class="err" id="errName">Escreva seu nome.</p>
+                <span class="visto" aria-hidden="true">✓</span>
+                <p class="err" id="errName">Escreva seu nome completo (ao menos 3 letras).</p>
               </div>
 
               <div class="f">
@@ -884,7 +902,8 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
                   <button type="button" id="tgWhats" aria-pressed="true">WhatsApp</button>
                   <button type="button" id="tgMail" aria-pressed="false">E-mail</button>
                 </div>
-                <input id="leadContact" name="contact" type="tel" inputmode="tel" autocomplete="tel-national" enterkeyhint="send" placeholder="(DDD) 99999-9999" required style="margin-top:.55rem">
+                <input id="leadContact" name="contact" type="tel" inputmode="numeric" autocomplete="tel-national" enterkeyhint="send" placeholder="(DDD) 99999-9999" required style="margin-top:.55rem">
+                <span class="visto" aria-hidden="true">✓</span>
                 <p class="err" id="errContact">Confira o número — precisa ter DDD e de 10 a 11 dígitos.</p>
               </div>
 
@@ -902,7 +921,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
               <button class="btn btn--block" type="submit" id="leadSubmit" style="margin-top:1.2rem">Quero acesso antecipado</button>
 
               <div class="fs fs--err" id="leadError" role="alert">Não conseguimos enviar agora. Seus dados continuam aqui — toque em “Tentar de novo”.</div>
-              <p class="foot-note">Seu contato fica só com a gente e serve apenas para falar do Guiadoo. <a href="privacidade/">Política de privacidade</a>.</p>
+              <p class="foot-note">Seus dados ficam protegidos e servem apenas para falar do Guiadoo. <a href="privacidade/">Política de privacidade</a>.</p>
             </form>
           </div>
 
@@ -1032,7 +1051,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 
     <section class="block block--coral">
       <div class="block-copy">
-        <h2>22h de sexta. Você não vai estar escrevendo.</h2>
+        <h2>22h de sexta-feira. Seu relatório pronto, suas noites livres.</h2>
         <p class="say">Escolha a turma e o período. O rascunho chega montado a partir dos seus registros, organizado por Campos de Experiência — pronto para você revisar, ajustar e assinar.</p>
       </div>
       <div class="block-art">
@@ -1102,8 +1121,9 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 
     <section class="block block--amarelo">
       <div class="block-copy">
-        <h2>Nada inventado. Só o que você registrou.</h2>
-        <p class="say">Cada parágrafo mostra de quais registros saiu, com data. O que não tem evidência é bloqueado antes de chegar até você — a checagem é automática, não é sugestão.</p>
+        <span class="regra">Regra BR-5</span>
+        <h2>Fidelidade absoluta aos seus registros.</h2>
+        <p class="say">O Guiadoo só escreve sobre fatos que você registrou. Cada parágrafo mostra a data e o momento real de onde saiu — auditoria visual para você sustentar o documento diante da coordenação e das famílias.</p>
       </div>
       <div class="block-art">
         <div class="device rise">
@@ -1375,7 +1395,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     if (type === 'whatsapp') {
       contactLabel.textContent = 'WhatsApp / Celular';
       contactInput.type = 'tel';
-      contactInput.inputMode = 'tel';
+      contactInput.inputMode = 'numeric';
       contactInput.autocomplete = 'tel-national';
       contactInput.placeholder = '(DDD) 99999-9999';
       errContact.textContent = 'Confira o número — precisa ter DDD e de 10 a 11 dígitos.';
@@ -1388,6 +1408,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
       errContact.textContent = 'Confira o e-mail — parece faltar alguma coisa.';
     }
     contactInput.value = '';
+    contactInput.classList.remove('is-ok');
     hideError(contactInput, errContact);
   }
   $('#tgWhats').addEventListener('click', function () { setContactType('whatsapp'); contactInput.focus(); });
@@ -1400,11 +1421,28 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     if (d.length <= 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
     return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
   }
+  // Validação ao vivo. O botão continua SEMPRE clicável: botão desabilitado
+  // não explica o que falta, e a pessoa fica olhando pra um botão morto sem
+  // saber se esqueceu o DDD ou se o site quebrou. Em vez disso, o campo
+  // avisa sozinho quando fica válido.
+  function nomeValido() { return nameInput.value.trim().length >= 3; }
+  function contatoValido() {
+    const v = contactInput.value.trim();
+    return contactType === 'whatsapp'
+      ? (v.replace(/\D/g, '').length >= 10 && v.replace(/\D/g, '').length <= 11)
+      : /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  }
+  function marcarOk(el, ok) { el.classList.toggle('is-ok', ok); }
+
   contactInput.addEventListener('input', function () {
     if (contactType === 'whatsapp') contactInput.value = maskPhone(contactInput.value);
     hideError(contactInput, errContact);
+    marcarOk(contactInput, contatoValido());
   });
-  nameInput.addEventListener('input', function () { hideError(nameInput, errName); });
+  nameInput.addEventListener('input', function () {
+    hideError(nameInput, errName);
+    marcarOk(nameInput, nomeValido());
+  });
   consentInput.addEventListener('change', function () { errConsent.classList.remove('show'); });
 
   let inicioForm = 0;
@@ -1423,7 +1461,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 
   function validate() {
     let ok = true;
-    if (nameInput.value.trim().length < 2) { showError(nameInput, errName); ok = false; } else hideError(nameInput, errName);
+    if (nameInput.value.trim().length < 3) { showError(nameInput, errName); ok = false; } else hideError(nameInput, errName);
 
     const raw = contactInput.value.trim();
     if (contactType === 'whatsapp') {
