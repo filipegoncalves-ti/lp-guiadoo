@@ -566,6 +566,14 @@ body.usando-teclado .so-teclado{ position:static; width:auto; height:auto; min-h
   background:var(--ink); color:#fff; border-radius:999px; padding:.3rem .8rem; margin-bottom:.9rem;
 }
 
+/* ---------- Indicação na tela de confirmação ---------- */
+.indicar{ margin-top:1.6rem; padding-top:1.4rem; border-top:1.5px solid var(--line); }
+.indicar-t{ font-family:var(--f-display); font-weight:700; font-size:1rem;
+            letter-spacing:-.02em; line-height:1.25; margin-bottom:.9rem; }
+.indicar .btn{ gap:.6rem; }
+.indicar-ok{ margin-top:.9rem; font-family:var(--f-display); font-weight:700;
+             font-size:.95rem; color:#1B7F3B; }
+
 .vh{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 </style>
 </head>
@@ -1034,8 +1042,20 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 
             <p id="escalaObrigada" class="escala-ok" hidden>Obrigado. Isso ajuda a gente a priorizar.</p>
 
-            <div style="margin-top:1.4rem">
-              <a class="btn btn--light" href="#topo">Voltar para o início</a>
+            <!-- Momento certo para pedir indicação: ela acabou de completar
+                 tudo e recebeu a confirmação. O link compartilhado leva UTM
+                 própria (utm_source=indicacao), então dá para medir quantos
+                 cadastros vieram de boca a boca vs. do flyer. -->
+            <div class="indicar">
+              <p class="indicar-t">Lembrou de uma colega que vai gostar?</p>
+              <button class="btn btn--block" type="button" id="btnCompartilhar">
+                <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true" style="flex:none">
+                  <path d="M18 8a3 3 0 1 0-2.8-4H15L8.9 9.6A3 3 0 1 0 8.9 14.4L15 20h.2A3 3 0 1 0 18 16a3 3 0 0 0-2 .8l-5.7-5.2a3 3 0 0 0 0-1.2L16 5.2A3 3 0 0 0 18 8z"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                </svg>
+                Compartilhar
+              </button>
+              <p class="indicar-ok" id="indicarOk" hidden>Obrigado por espalhar. 💚</p>
             </div>
           </div>
 
@@ -1387,6 +1407,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     signup_completed: 'lp_signup_completed',
     product_interest_answered: 'lp_product_interest_answered',
     faq_expanded: 'lp_faq_expanded',
+    share_clicked: 'lp_share_clicked',
     scroll_depth: 'lp_scroll_depth'
   };
 
@@ -1966,6 +1987,52 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
   }
 
   renderStep();
+
+  /* ---------- Indicação: compartilhar com uma colega ---------- */
+  // No celular usamos o compartilhamento nativo do sistema (que já lista
+  // WhatsApp como primeira opção, além de SMS, e-mail, etc.). Onde ele não
+  // existe — desktop, navegadores antigos — caímos no link direto do
+  // WhatsApp, que abre o WhatsApp Web.
+  const btnCompartilhar = $('#btnCompartilhar');
+  if (btnCompartilhar) {
+    const linkIndicacao = location.origin + location.pathname +
+      '?utm_source=indicacao&utm_medium=whatsapp&utm_campaign=boca-a-boca';
+
+    const textoIndicacao =
+      'Achei isso e lembrei de você: o Guiadoo registra o que acontece na aula ' +
+      'e já deixa o relatório rascunhado. Dá pra entrar na lista de acesso antecipado aqui:';
+
+    function confirmarEnvio(via) {
+      track('share_clicked', { via: via });
+      const ok = $('#indicarOk');
+      if (ok) ok.hidden = false;
+    }
+
+    btnCompartilhar.addEventListener('click', async function () {
+      // navigator.share só funciona em contexto seguro (https) e a partir
+      // de um gesto do usuário — as duas condições estão satisfeitas aqui.
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'Guiadoo',
+            text: textoIndicacao,
+            url: linkIndicacao
+          });
+          confirmarEnvio('nativo');
+          return;
+        } catch (e) {
+          // A pessoa fechou a folha de compartilhamento sem escolher nada.
+          // Isso não é erro e não deve virar fallback: abrir o WhatsApp
+          // por cima seria justamente o contrário do que ela pediu.
+          if (e && e.name === 'AbortError') return;
+        }
+      }
+      // Sem compartilhamento nativo: WhatsApp direto.
+      const url = 'https://wa.me/?text=' + encodeURIComponent(textoIndicacao + ' ' + linkIndicacao);
+      window.open(url, '_blank', 'noopener');
+      confirmarEnvio('whatsapp_web');
+    });
+  }
 
   /* ---------- 6. Cabeçalho e CTA fixa ---------- */
   const sticky = $('#stickyCta');
