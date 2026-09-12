@@ -777,7 +777,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 </g></svg>
       Guiadoo
     </a>
-    <a class="btn" href="#fazer-parte" data-cta="header">Quero fazer parte</a>
+    <a class="btn" href="#fazer-parte" data-cta="header" id="headerCta">Quero fazer parte</a>
   </div>
 </header>
 
@@ -1224,7 +1224,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     <nav>
       <a href="sobre/">Sobre o produto</a>
       <a href="privacidade/">Privacidade</a>
-      <a href="mailto:contato@guiadoo.com.br">Falar com a gente</a>
+      <a href="mailto:contato@guiadoo.com.br" id="linkContato">Falar com a gente</a>
     </nav>
   </div>
 </footer>
@@ -1408,6 +1408,9 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     product_interest_answered: 'lp_product_interest_answered',
     faq_expanded: 'lp_faq_expanded',
     share_clicked: 'lp_share_clicked',
+    header_cta_clicked: 'lp_header_cta_clicked',
+    lead_form_error: 'lp_lead_form_error',
+    external_link_clicked: 'lp_external_link_clicked',
     scroll_depth: 'lp_scroll_depth'
   };
 
@@ -1426,7 +1429,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
     // não poluir o projeto com eventos ad-hoc. Passa pela fila, então
     // funciona mesmo antes do Mixpanel terminar de carregar.
     if (NOME_LP[event] && mpConfigurado) {
-      mpChamar('track', [nomeLp, props || {}]);
+      try { window.mixpanel.track(nomeLp, props || {}); } catch (e) { /* best effort */ }
     }
 
     if (debug) {
@@ -1451,55 +1454,87 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
   // ---- Mixpanel: carregamento e fila própria ----
   // Antes eu usava o "snippet oficial" minificado, copiado à mão — e errei
   // uma variável ao transcrever, o que fazia os métodos (track, register,
-  // identify) serem anexados ao objeto errado. Resultado: erro fatal no
-  // carregamento da página. Trocado por uma fila curta e legível, que eu
-  // consigo testar de verdade.
+  // Snippet OFICIAL do Mixpanel, colado sem alteração (a última versão que
+  // eu tinha escrito à mão tinha um erro de transcrição — "mixpanel.register
+  // is not a function" — porque troquei uma variável sem querer. Copiar
+  // isto do jeito que o próprio Mixpanel gera elimina essa classe inteira
+  // de erro: não há nada aqui para eu digitar errado.
   //
-  // Como funciona: enquanto o arquivo do Mixpanel não terminou de baixar,
-  // as chamadas vão para mpFila. Quando ele carrega, a fila é despejada na
-  // ordem. Se ele NUNCA carregar (bloqueador de anúncio, rede caída), nada
-  // quebra — o resto da página segue normal e a fila só é descartada.
-  let mpPronto = false;
-  let mpFila = [];
-
-  function mpChamar(metodo, args) {
-    if (mpPronto && window.mixpanel && typeof window.mixpanel[metodo] === 'function') {
-      try { window.mixpanel[metodo].apply(window.mixpanel, args); } catch (e) { /* best effort */ }
-    } else if (mpConfigurado) {
-      if (mpFila.length < 60) mpFila.push([metodo, args]);   // teto de segurança
-    }
-  }
-
+  // Diferença importante em relação à versão anterior: o stub abaixo já
+  // enfileira sozinho qualquer chamada (track, identify, register...) feita
+  // antes do arquivo real terminar de baixar — por isso não precisamos mais
+  // da fila (mpFila/mpChamar) que eu tinha escrito à mão. Menos código
+  // nosso, menos chance de repetir o erro da vez passada.
   if (mpConfigurado) {
-    const mpScript = document.createElement('script');
-    mpScript.async = true;
-    mpScript.src = 'https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js';
-    mpScript.onload = function () {
-      try {
-        window.mixpanel.init(CONFIG.mixpanel.token, { track_pageview: false, persistence: 'localStorage' });
-        mpPronto = true;
-        const pendentes = mpFila; mpFila = [];
-        pendentes.forEach(function (item) { mpChamar(item[0], item[1]); });
-        if (debug) console.info('[guiadoo] Mixpanel pronto — ' + pendentes.length + ' evento(s) da fila enviados.');
-      } catch (e) {
-        if (debug) console.error('[guiadoo] Mixpanel falhou ao iniciar:', e && e.message);
+    (function (e, c) {
+      if (!c.__SV) {
+        var l, h; window.mixpanel = c; c._i = []; c.init = function (q, r, f) {
+          function t(d, a) { var g = a.split('.'); 2 == g.length && (d = d[g[0]], a = g[1]); d[a] = function () { d.push([a].concat(Array.prototype.slice.call(arguments, 0))); }; }
+          var b = c; 'undefined' !== typeof f ? b = c[f] = [] : f = 'mixpanel'; b.people = b.people || [];
+          b.toString = function (d) { var a = 'mixpanel'; 'mixpanel' !== f && (a += '.' + f); d || (a += ' (stub)'); return a; };
+          b.people.toString = function () { return b.toString(1) + '.people (stub)'; };
+          l = 'disable time_event track track_pageview track_links track_forms track_with_groups add_group set_group remove_group register register_once alias unregister identify name_tag set_config reset opt_in_tracking opt_out_tracking has_opted_in_tracking has_opted_out_tracking clear_opt_in_out_tracking start_batch_senders start_session_recording stop_session_recording people.set people.set_once people.unset people.increment people.append people.union people.track_charge people.clear_charges people.delete_user people.remove'.split(' ');
+          for (h = 0; h < l.length; h++) t(b, l[h]);
+          var n = 'set set_once union unset remove delete'.split(' ');
+          b.get_group = function () { function d(p) { a[p] = function () { b.push([g, [p].concat(Array.prototype.slice.call(arguments, 0))]); }; } for (var a = {}, g = ['get_group'].concat(Array.prototype.slice.call(arguments, 0)), m = 0; m < n.length; m++) d(n[m]); return a; };
+          c._i.push([q, r, f]);
+        }; c.__SV = 1.2;
+        var k = e.createElement('script'); k.type = 'text/javascript'; k.async = true;
+        k.src = 'https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js';
+        e = e.getElementsByTagName('script')[0]; e.parentNode.insertBefore(k, e);
       }
-    };
-    mpScript.onerror = function () {
-      if (debug) console.info('[guiadoo] Mixpanel não carregou (bloqueador ou rede) — a página segue normal.');
-      mpFila = [];
-    };
-    document.head.appendChild(mpScript);
+    })(document, window.mixpanel || []);
 
-    // Propriedades que acompanham TODOS os eventos daqui pra frente
-    mpChamar('register', [{
+    // autocapture: registra sozinho cliques e envios de formulário em toda
+    // a página, sem precisarmos instrumentar um por um — funciona como
+    // rede de segurança para o que a gente não pensou em rastrear
+    // manualmente. Convive bem com nossos eventos lp_*: ambos chegam,
+    // não se atropelam.
+    //
+    // record_sessions_percent: 100 grava a sessão de todo mundo, para dar
+    // pra assistir como a professora navega. Conferi antes de ligar:
+    // por padrão o Mixpanel MASCARA todo campo de formulário sozinho, sem
+    // configuração nossa — "inputs are always masked and cannot be
+    // unmasked" é garantia deles, não depende de eu lembrar de nada. Ou
+    // seja, nome e contato do formulário não aparecem na gravação mesmo
+    // com isto ligado. (O que vale evitar no futuro: mexer em
+    // record_mask_all_text para "tirar os asteriscos" do texto comum da
+    // página — isso não afeta os campos do formulário, que continuam
+    // protegidos de qualquer forma, mas é bom saber que essa opção existe
+    // e não deve ser usada sem necessidade.)
+    window.mixpanel.init(CONFIG.mixpanel.token, {
+      autocapture: true,
+      record_sessions_percent: 100
+    });
+
+    // ┌────────────────────────────────────────────────────────────────┐
+    // │ O QUE O MIXPANEL JÁ TRAZ SOZINHO — sem nenhuma linha nossa      │
+    // │                                                                 │
+    // │ A biblioteca do Mixpanel anexa isto a TODO evento               │
+    // │ automaticamente, incluindo o lp_page_viewed:                    │
+    // │   $browser, $browser_version, $os, $device                      │
+    // │   $current_url, $initial_referrer, $initial_referring_domain    │
+    // │   $screen_height, $screen_width                                 │
+    // │   mp_country_code, $city, $region  (calculados pelo IP,         │
+    // │       adicionados no servidor do Mixpanel — não aparecem aqui   │
+    // │       no navegador, só depois de chegar lá)                     │
+    // │   time, distinct_id, $insert_id                                 │
+    // │                                                                 │
+    // │ Por isso a página NUNCA manda navegador, sistema operacional    │
+    // │ ou localização à mão — seria trabalho duplicado. O que a gente  │
+    // │ registra abaixo é só o que o Mixpanel não tem como saber        │
+    // │ sozinho: de qual campanha a pessoa veio, se é mobile ou         │
+    // │ desktop (nossa própria definição, por largura de tela) e em     │
+    // │ qual página da landing ela está.                                │
+    // └────────────────────────────────────────────────────────────────┘
+    window.mixpanel.register({
       utm_source: attribution.utm_source || 'direct',
       utm_medium: attribution.utm_medium || null,
       utm_campaign: attribution.utm_campaign || null,
       utm_content: attribution.utm_content || null,
       device_type: DEVICE,
       landing_page: location.pathname
-    }]);
+    });
   }
 
   track('page_view', {
@@ -1515,9 +1550,42 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
   // CTA clicks — um evento só, a origem vai na propriedade "location"
   $$('[data-cta]').forEach(function (el) {
     el.addEventListener('click', function () {
-      track('cta_click', { location: el.getAttribute('data-cta') });
+      track('cta_click', {
+        location: el.getAttribute('data-cta'),
+        button_text: el.textContent.trim(),
+        destination: el.getAttribute('href')
+      });
     });
   });
+
+  // ┌──────────────────────────────────────────────────────────────────┐
+  // │ TESTE DE CONEXÃO COM O MIXPANEL                                  │
+  // │                                                                  │
+  // │ O botão do cabeçalho já dispara "lp_cta_clicked" (location:      │
+  // │ "header") através do bloco genérico acima — isso alimenta a      │
+  // │ comparação entre TODOS os CTAs da página (header, hero, sticky,  │
+  // │ final). Este listener dispara um SEGUNDO evento, só para esse    │
+  // │ botão, com nome único e fácil de achar no Live View do Mixpanel: │
+  // │ é o evento pensado para confirmar rápido que a conexão funciona, │
+  // │ sem precisar filtrar entre vários "cta_clicked" de lugares       │
+  // │ diferentes.                                                      │
+  // │                                                                  │
+  // │ Como testar:                                                     │
+  // │  1. Abra o site publicado                                        │
+  // │  2. Clique em "Quero fazer parte" no topo da página               │
+  // │  3. No Mixpanel: Live View → procure "lp_header_cta_clicked"     │
+  // │     Deve aparecer em poucos segundos.                            │
+  // └──────────────────────────────────────────────────────────────────┘
+  const headerCta = $('#headerCta');
+  if (headerCta) {
+    headerCta.addEventListener('click', function () {
+      track('header_cta_clicked', {
+        button_text: headerCta.textContent.trim(),
+        destination: headerCta.getAttribute('href'),
+        page_url: location.pathname
+      });
+    });
+  }
 
   // Scroll depth — um evento só (lp_scroll_depth), percentual na propriedade
   (function scrollDepth() {
@@ -1578,7 +1646,9 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
   // e-mail. É o vínculo entre "lead no Supabase" e "pessoa no Mixpanel"
   // sem duplicar dado pessoal em dois lugares.
   function identifyLead(leadId) {
-    if (mpConfigurado) mpChamar('identify', [leadId]);
+    if (mpConfigurado) {
+      try { window.mixpanel.identify(leadId); } catch (e) { /* best effort */ }
+    }
   }
 
   async function flushQueue() {
@@ -1695,22 +1765,30 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 
   function validate() {
     let ok = true;
-    if (nameInput.value.trim().length < 3) { showError(nameInput, errName); ok = false; } else hideError(nameInput, errName);
+    let motivo = null;
+
+    if (nameInput.value.trim().length < 3) { showError(nameInput, errName); ok = false; motivo = 'name'; }
+    else hideError(nameInput, errName);
 
     const raw = contactInput.value.trim();
     if (contactType === 'whatsapp') {
       const digits = raw.replace(/\D/g, '');
-      if (digits.length < 10 || digits.length > 11) { showError(contactInput, errContact); ok = false; }
+      if (digits.length < 10 || digits.length > 11) { showError(contactInput, errContact); ok = false; motivo = motivo || 'contact'; }
       else hideError(contactInput, errContact);
     } else {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(raw)) { showError(contactInput, errContact); ok = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(raw)) { showError(contactInput, errContact); ok = false; motivo = motivo || 'contact'; }
       else hideError(contactInput, errContact);
     }
 
-    if (!consentInput.checked) { errConsent.classList.add('show'); ok = false; }
+    if (!consentInput.checked) { errConsent.classList.add('show'); ok = false; motivo = motivo || 'consent'; }
     else errConsent.classList.remove('show');
 
     if (!ok) {
+      // Erro de preenchimento, não de rede — evento separado do
+      // lp_lead_form_error de falha na gravação, para diferenciar "a
+      // pessoa errou o telefone" de "o Supabase caiu" quando for olhar
+      // o funil depois. Nunca inclui o valor digitado, só qual campo.
+      track('lead_form_error', { error_type: 'validation', field: motivo });
       const first = $('[aria-invalid="true"]') || (consentInput.checked ? null : consentInput);
       if (first && first.focus) first.focus();
     }
@@ -1812,6 +1890,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
         loadingOn(false, 'Tentar de novo');
         leadError.classList.add('show');
         track('lead_create_failed', { attempt: attempts });
+        track('lead_form_error', { error_type: 'network', field: null });
         return;
       }
     }
@@ -2152,9 +2231,22 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
   const FAQ_SLUGS = ['early_access', 'how_it_works', 'ai_trust', 'pricing', 'privacy'];
   $$('.faq details').forEach(function (d, i) {
     d.addEventListener('toggle', function () {
-      if (d.open) track('faq_expanded', { question: FAQ_SLUGS[i] || 'q' + (i + 1) });
+      if (d.open) {
+        track('faq_expanded', {
+          question: FAQ_SLUGS[i] || 'q' + (i + 1),
+          question_position: i + 1
+        });
+      }
     });
   });
+
+  // Único link externo relevante da página hoje: o e-mail de contato.
+  const linkContato = $('#linkContato');
+  if (linkContato) {
+    linkContato.addEventListener('click', function () {
+      track('external_link_clicked', { link_name: 'email_contato', link_location: 'footer' });
+    });
+  }
 
   // Preserva os parâmetros da campanha se houver navegação para outra página
   // Links internos herdam a campanha. Usamos href relativo (funciona igual
