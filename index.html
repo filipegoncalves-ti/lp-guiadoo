@@ -168,24 +168,58 @@ img,svg{ max-width:100%; display:block; }
 }
 .fase{ position:relative; text-align:center; }
 
-/* seta entre um cartão e o próximo */
+/* seta entre um cartão e o próximo — centrada na altura do círculo, que
+   agora é igual à largura da coluna (aspect-ratio:1) */
 .fase + .fase::before{
-  content:""; position:absolute; left:calc(-1 * clamp(.5rem,2.5vw,1rem) / 2 - 3px);
-  top:clamp(28px, 9vw, 38px); width:7px; height:7px;
+  content:""; position:absolute;
+  left:calc(-1 * clamp(.5rem,2.5vw,1rem) / 2 - 3px);
+  top:calc(50% - 0.75rem);          /* 50% do círculo, descontando o rótulo abaixo */
+  width:7px; height:7px;
   border-top:2px solid var(--ink); border-right:2px solid var(--ink);
   transform:translateY(-50%) rotate(45deg); opacity:.45;
 }
 
 .fase-art{
   display:grid; place-items:center;
-  border:2px solid var(--ink); border-radius:14px;
-  padding:clamp(.5rem, 2.4vw, .85rem);
-  box-shadow:3px 4px 0 rgba(17,17,17,.14);
+  aspect-ratio:1;                       /* círculo perfeito em qualquer largura */
+  border:2px solid var(--ink); border-radius:50%;
+  padding:22%;
+  box-shadow:3px 4px 0 rgba(17,17,17,.16);
+  /* Cada círculo sobe de leve na sua vez, em sequência — é o que
+     comunica a ORDEM das etapas sem precisar numerar nada. Ciclo lento
+     (5,4s) e deslocamento pequeno: some no canto do olho, não disputa
+     atenção com a manchete. */
+  animation:faseDestaque 5.4s ease-in-out infinite;
+  will-change:transform;
 }
-.fase-art svg{ width:100%; height:auto; max-width:52px; display:block; }
-.fase--a .fase-art{ background:var(--lavanda); }
-.fase--b .fase-art{ background:var(--azul); }
-.fase--c .fase-art{ background:var(--amarelo); }
+.fase-art svg{ width:100%; height:auto; display:block; }
+.fase--a .fase-art{ background:var(--lavanda); animation-delay:0s; }
+.fase--b .fase-art{ background:var(--azul);    animation-delay:1.8s; }
+.fase--c .fase-art{ background:var(--amarelo); animation-delay:3.6s; }
+
+@keyframes faseDestaque{
+  0%, 100%  { transform:translateY(0);    box-shadow:3px 4px 0 rgba(17,17,17,.16); }
+  7%        { transform:translateY(-6px); box-shadow:3px 10px 0 rgba(17,17,17,.22); }
+  20%       { transform:translateY(0);    box-shadow:3px 4px 0 rgba(17,17,17,.16); }
+}
+
+/* a seta acende junto com a etapa que ela aponta */
+.fase + .fase::before{ animation:setaDestaque 5.4s ease-in-out infinite; }
+.fase--b::before{ animation-delay:1.5s; }
+.fase--c::before{ animation-delay:3.3s; }
+
+@keyframes setaDestaque{
+  0%, 100% { opacity:.35; }
+  7%       { opacity:1; }
+  22%      { opacity:.35; }
+}
+
+/* Quem pediu menos movimento no sistema não vê animação nenhuma —
+   os círculos ficam parados e as setas com opacidade fixa. */
+@media (prefers-reduced-motion: reduce){
+  .fase-art, .fase + .fase::before{ animation:none; }
+  .fase + .fase::before{ opacity:.5; }
+}
 
 .fase-nome{
   display:block; margin-top:.55rem;
