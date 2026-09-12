@@ -32,7 +32,29 @@
 <noscript><link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600&display=swap"></noscript>
 
-<script>document.documentElement.className += " js";</script>
+<script>
+/* Este script é minúsculo e roda antes de tudo, de propósito: ele é o
+   único que não pode falhar.
+
+   A classe "js" esconde as ilustrações para elas entrarem com animação
+   depois. Só que isso cria uma dependência perigosa: se QUALQUER erro
+   acontecer no script principal lá embaixo, o observador que revela as
+   ilustrações nunca é criado — e elas ficam invisíveis para sempre.
+   Foi exatamente o que aconteceu quando uma credencial inválida do
+   Supabase matava o script no topo.
+
+   Daí a rede de segurança: passados 2,5s, revela tudo de qualquer jeito.
+   Se o script principal estiver saudável, ele já revelou antes disso e
+   este timeout não faz diferença nenhuma. Se algo quebrou, o conteúdo
+   aparece mesmo assim — só perde a animação, que é o detalhe dispensável. */
+document.documentElement.className += " js";
+setTimeout(function () {
+  var ocultos = document.querySelectorAll('.rise:not(.in), .moment:not(.is-in)');
+  for (var i = 0; i < ocultos.length; i++) {
+    ocultos[i].classList.add(ocultos[i].classList.contains('moment') ? 'is-in' : 'in');
+  }
+}, 2500);
+</script>
 <style>
 /* ============================================================
    GUIADOO — Landing de campanha (flyer + QR Code)
@@ -1235,6 +1257,23 @@ if (window.mixpanel && window.mixpanel.init) {
 (function () {
   'use strict';
 
+  // ⚠️ PRIMEIRA COISA DO SCRIPT, de propósito.
+  // As ilustrações nascem com opacity:0 (regra ".js .rise") e só aparecem
+  // quando o JavaScript adiciona a classe ".in" — lá embaixo, perto do
+  // fim do arquivo. Isso significa que QUALQUER erro no meio do caminho
+  // (config errada, SDK externo que não carregou, etc.) deixaria todas as
+  // ilustrações invisíveis para sempre, e a pessoa veria só os textos.
+  //
+  // Conteúdo nunca pode depender do script inteiro dar certo. Este
+  // temporizador roda antes de tudo: se em 2,5s a animação normal não
+  // tiver revelado uma ilustração, ela aparece assim mesmo, sem animação.
+  // Quando está tudo certo, a revelação por scroll acontece bem antes e
+  // este fallback não faz diferença nenhuma.
+  setTimeout(function () {
+    var escondidas = document.querySelectorAll('.rise:not(.in)');
+    for (var i = 0; i < escondidas.length; i++) escondidas[i].classList.add('in');
+  }, 2500);
+
   // Rede de segurança de último recurso: se ALGUM erro não previsto
   // acontecer em qualquer lugar deste script antes do formulário estar
   // pronto, a pessoa vê um aviso claro em vez do botão "não fazer nada"
@@ -1266,12 +1305,12 @@ if (window.mixpanel && window.mixpanel.init) {
     // │    formulário funciona na tela, mas o contato fica só no         │
     // │    navegador da professora e VOCÊ NUNCA O RECEBE.                │
     // └──────────────────────────────────────────────────────────────────┘
-   supabase: {
-      url: 'https://vhlzwhcgnrivhysomrvz.supabase.co',                  // ex.: 'https://xxxxx.supabase.co'
-      anonKey: 'sb_publishable_IPo-8m1sOYyhYpq_l2guIQ_8RkHEoGU'    // a chave PÚBLICA (anon/publishable) — nunca a service_role
+    supabase: {
+      url: 'COLOCAR_SUPABASE_URL',                  // ex.: 'https://xxxxx.supabase.co'
+      anonKey: 'COLOCAR_SUPABASE_PUBLISHABLE_KEY'    // a chave PÚBLICA (anon/publishable) — nunca a service_role
     },
     mixpanel: {
-      token: '3127d44b2c4b6f9376d3b65fc3a5f439'
+      token: 'COLOCAR_MIXPANEL_TOKEN'
     },
 
     // Qual canal vem pré-selecionado. Os dois documentos de diagnóstico
