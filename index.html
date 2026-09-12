@@ -139,6 +139,9 @@ img,svg{ max-width:100%; display:block; }
 .brand{ display:flex; align-items:center; gap:.55rem; text-decoration:none; font-family:var(--f-display); font-weight:800; font-size:1.35rem; letter-spacing:-.04em; }
 .brand svg{ width:30px; height:30px; flex:none; }
 .hd .btn{ padding:.62rem 1.25rem; min-height:46px; font-size:.98rem; }
+/* O botão do cabeçalho tem duas versões do texto; por padrão só a longa
+   aparece. A curta entra apenas abaixo de 360px (ver media query). */
+.hd .btn .curto{ display:none; }
 
 /* ---------- Hero ---------- */
 .hero{ padding:clamp(26px,5vw,64px) 0 clamp(40px,6vw,72px); position:relative; overflow:hidden; }
@@ -153,6 +156,42 @@ img,svg{ max-width:100%; display:block; }
   color:var(--ink-2); max-width:30ch; line-height:1.4;
 }
 .hero .cta-row{ margin-top:1.9rem; display:flex; flex-direction:column; gap:.65rem; align-items:flex-start; }
+
+/* ---------- As três fases, no topo ---------- */
+/* Mobile-first: três colunas iguais desde 320px. Manter lado a lado (e não
+   empilhado) é proposital — a professora precisa ler como UMA sequência,
+   não como três coisas separadas. Por isso as setas entre os cartões. */
+.fases{
+  list-style:none; margin:1.6rem 0 0; padding:0;
+  display:grid; grid-template-columns:repeat(3, 1fr);
+  gap:clamp(.5rem, 2.5vw, 1rem); max-width:34rem;
+}
+.fase{ position:relative; text-align:center; }
+
+/* seta entre um cartão e o próximo */
+.fase + .fase::before{
+  content:""; position:absolute; left:calc(-1 * clamp(.5rem,2.5vw,1rem) / 2 - 3px);
+  top:clamp(28px, 9vw, 38px); width:7px; height:7px;
+  border-top:2px solid var(--ink); border-right:2px solid var(--ink);
+  transform:translateY(-50%) rotate(45deg); opacity:.45;
+}
+
+.fase-art{
+  display:grid; place-items:center;
+  border:2px solid var(--ink); border-radius:14px;
+  padding:clamp(.5rem, 2.4vw, .85rem);
+  box-shadow:3px 4px 0 rgba(17,17,17,.14);
+}
+.fase-art svg{ width:100%; height:auto; max-width:52px; display:block; }
+.fase--a .fase-art{ background:var(--lavanda); }
+.fase--b .fase-art{ background:var(--azul); }
+.fase--c .fase-art{ background:var(--amarelo); }
+
+.fase-nome{
+  display:block; margin-top:.55rem;
+  font-family:var(--f-display); font-weight:800;
+  font-size:clamp(.76rem, 2.9vw, .95rem); letter-spacing:-.02em;
+}
 .hero .micro{ font-size:.92rem; color:var(--ink-3); }
 
 .hero-grid{ display:grid; gap:clamp(34px,5vw,56px); align-items:center; }
@@ -179,6 +218,15 @@ img,svg{ max-width:100%; display:block; }
   .doodle.hide-sm{ display:none; }
   .blob{ inset:13% -9% 8% -9%; }
   .hd .btn{ font-size:.88rem; padding:.6rem .9rem; min-height:46px; white-space:nowrap; }
+
+  /* Em telas muito estreitas (320px), "Quero fazer parte" + o logo não
+     cabem lado a lado. O texto encurta para "Participar" — a ação é a
+     mesma, e o CTA completo continua aparecendo no corpo da página. */
+  @media (max-width:360px){
+    .hd .btn{ font-size:.82rem; padding:.55rem .75rem; }
+    .hd .btn .longo{ display:none; }
+    .hd .btn .curto{ display:inline; }
+  }
   .brand b{ font-size:1.15rem; }
   .brand .owl, .brand svg{ width:26px; height:26px; }
   .hd .wrap{ height:62px; }
@@ -777,7 +825,7 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
 </g></svg>
       Guiadoo
     </a>
-    <a class="btn" href="#fazer-parte" data-cta="header" id="headerCta">Quero fazer parte</a>
+    <a class="btn" href="#fazer-parte" data-cta="header" id="headerCta"><span class="curto">Participar</span><span class="longo">Quero fazer parte</span></a>
   </div>
 </header>
 
@@ -787,14 +835,59 @@ c-221 390 -339 914 -333 1475 1 136 -1 186 -11 198 -18 21 -28 19 -60 -13z"/>
   <section class="hero" id="topo">
     <div class="wrap hero-grid">
       <div>
-        <h1>O quanto você trabalha depois da aula?</h1>
-        <p class="turn">Com o Guiadoo, suas notas de voz viram relatórios organizados pelos Campos de Experiência da BNCC.</p>
-        <p class="sub">Grave a rotina pelo celular em segundos. O Guiadoo organiza os fatos e rascunha o documento por Campos de Experiência. Você revisa, edita e assina.</p>
-        <div class="cta-row">
-          <a class="btn" href="#fazer-parte" data-cta="hero">Quero fazer parte</a>
-          <span class="micro">Só nome e um contato. Leva 20 segundos.</span>
-          <p class="trustline"><span class="tb">Organizado por Campos de Experiência</span><span class="tb">Dados das crianças sob a LGPD</span><span class="tb">A professora no controle</span></p>
-        </div>
+        <h1>O quanto você trabalha depois da escola?</h1>
+        <p class="turn">Suas notas de voz viram relatório, já organizado pelos Campos de Experiência da BNCC.</p>
+
+        <!-- As três etapas do trabalho pedagógico, na ordem em que acontecem.
+             É a primeira coisa que a professora vê depois da manchete: antes
+             de qualquer CTA, ela precisa entender O QUE o Guiadoo faz. -->
+        <ol class="fases" aria-label="As três etapas que o Guiadoo cobre">
+          <li class="fase fase--a">
+            <span class="fase-art" aria-hidden="true">
+              <svg viewBox="0 0 56 44">
+                <rect x="3" y="6" width="50" height="35" rx="6" fill="#fff" stroke="#111" stroke-width="2.6"/>
+                <path d="M3 15h50" stroke="#111" stroke-width="2.6"/>
+                <path d="M15 3v7M41 3v7" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+                <rect x="9" y="21" width="15" height="4.5" rx="2.2" fill="#111"/>
+                <rect x="27" y="21" width="20" height="4.5" rx="2.2" fill="#111" opacity=".3"/>
+                <rect x="9" y="30" width="24" height="4.5" rx="2.2" fill="#111" opacity=".3"/>
+              </svg>
+            </span>
+            <span class="fase-nome">Planejamento</span>
+          </li>
+
+          <li class="fase fase--b">
+            <span class="fase-art" aria-hidden="true">
+              <svg viewBox="0 0 56 44">
+                <rect x="21" y="4" width="14" height="22" rx="7" fill="#fff" stroke="#111" stroke-width="2.6"/>
+                <path d="M15 22a13 13 0 0 0 26 0M28 35v6" stroke="#111" stroke-width="2.6"
+                      fill="none" stroke-linecap="round"/>
+                <path d="M6 20v4M11 17v10M45 17v10M50 20v4" stroke="#111" stroke-width="2.6" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="fase-nome">Registro</span>
+          </li>
+
+          <li class="fase fase--c">
+            <span class="fase-art" aria-hidden="true">
+              <svg viewBox="0 0 56 44">
+                <path d="M13 3h22l10 10v28H13z" fill="#fff" stroke="#111" stroke-width="2.6" stroke-linejoin="round"/>
+                <path d="M35 3v10h10" fill="none" stroke="#111" stroke-width="2.6" stroke-linejoin="round"/>
+                <rect x="19" y="19" width="20" height="3.6" rx="1.8" fill="#111" opacity=".3"/>
+                <rect x="19" y="26" width="15" height="3.6" rx="1.8" fill="#111" opacity=".3"/>
+                <path d="M19 34.5c3-2.5 5 2.5 8 0s5 2.5 8 0" fill="none" stroke="#111"
+                      stroke-width="2.4" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="fase-nome">Relatório</span>
+          </li>
+        </ol>
+
+        <p class="trustline">
+          <span class="tb">Mais tempo com as crianças</span>
+          <span class="tb">Menos trabalho em casa</span>
+          <span class="tb">Relatório com evidência real</span>
+        </p>
       </div>
 
       <div class="stage-wrap">
