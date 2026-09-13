@@ -164,16 +164,22 @@ img,svg{ max-width:100%; display:block; }
 .fases{
   list-style:none; margin:1.6rem 0 0; padding:0;
   display:grid; grid-template-columns:repeat(3, 1fr);
-  gap:clamp(.5rem, 2.5vw, 1rem); max-width:34rem;
+  gap:clamp(.5rem, 2.5vw, 1rem); max-width:27rem;
+
+  /* Tamanho do círculo num lugar só: a seta entre as etapas precisa
+     acompanhar essa medida para ficar centrada na altura dele. Mobile-first
+     — cresce com a tela até um teto, em vez de preencher a coluna inteira
+     (era isso que deixava os círculos grandes demais no desktop). */
+  --circulo: clamp(64px, 19vw, 98px);
 }
 .fase{ position:relative; text-align:center; }
 
-/* seta entre um cartão e o próximo — centrada na altura do círculo, que
-   agora é igual à largura da coluna (aspect-ratio:1) */
+/* seta entre um cartão e o próximo — centrada na altura do círculo
+   (usa a mesma variável --circulo, então nunca desalinha) */
 .fase + .fase::before{
   content:""; position:absolute;
   left:calc(-1 * clamp(.5rem,2.5vw,1rem) / 2 - 3px);
-  top:calc(50% - 0.75rem);          /* 50% do círculo, descontando o rótulo abaixo */
+  top:calc(var(--circulo) / 2);
   width:7px; height:7px;
   border-top:2px solid var(--ink); border-right:2px solid var(--ink);
   transform:translateY(-50%) rotate(45deg); opacity:.45;
@@ -181,7 +187,8 @@ img,svg{ max-width:100%; display:block; }
 
 .fase-art{
   display:grid; place-items:center;
-  aspect-ratio:1;                       /* círculo perfeito em qualquer largura */
+  width:var(--circulo); aspect-ratio:1;   /* tamanho fixo, não a largura da coluna */
+  margin-inline:auto;                     /* centraliza dentro da coluna */
   border:2px solid var(--ink); border-radius:50%;
   padding:22%;
   box-shadow:3px 4px 0 rgba(17,17,17,.16);
@@ -222,9 +229,12 @@ img,svg{ max-width:100%; display:block; }
 }
 
 .fase-nome{
-  display:block; margin-top:.55rem;
+  display:block; margin-top:.6rem;
   font-family:var(--f-display); font-weight:800;
-  font-size:clamp(.76rem, 2.9vw, .95rem); letter-spacing:-.02em;
+  font-size:clamp(.86rem, 3.6vw, 1.05rem); letter-spacing:-.02em;
+}
+@media (min-width:900px){
+  .fase-nome{ font-size:1.15rem; margin-top:.75rem; }
 }
 .hero .micro{ font-size:.92rem; color:var(--ink-3); }
 
